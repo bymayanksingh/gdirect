@@ -441,13 +441,13 @@ function App() {
                   disabled={!previewUrls.length}
                 >
                   <Download className="w-4 h-4" />
-                  Download All
+                  Download all
                 </button>
                 {[
                   { type: 'json', icon: FileJson, label: 'JSON' },
                   { type: 'csv', icon: FileText, label: 'CSV' },
                   { type: 'markdown', icon: FileText, label: 'Markdown' },
-                  { type: 'html', icon: FileText, label: 'HTML/ Image Preview' }
+                  { type: 'html', icon: FileText, label: 'HTML / Image Preview' }
                 ].map(({ type, icon: Icon, label }) => (
                   <div key={type} className="relative">
                     <button
