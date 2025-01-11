@@ -37,6 +37,7 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
       }
 
       if (fileId) {
+        // For image previews, use the lh3.googleusercontent.com format
         return `https://lh3.googleusercontent.com/d/${fileId}`;
       }
     }
@@ -141,14 +142,23 @@ function App() {
   };
 
   const formatOutput = (urls: string[]) => {
-    switch (outputFormat) {
-      case 'markdown':
-        return urls.map(url => `![image](${url})`).join('\n');
-      case 'html':
-        return urls.map(url => `<img src="${url}" alt="image" />`).join('\n');
-      default:
-        return urls.join('\n');
+    if (outputFormat === 'plain') {
+      return urls.map(url => {
+        const fileId = url.split('/').pop();
+        return `Preview URL:\nhttps://lh3.googleusercontent.com/d/${fileId}\n\nDirect URL:\nhttps://drive.google.com/uc?export=view&id=${fileId}\n`;
+      }).join('\n');
+    } else if (outputFormat === 'markdown') {
+      return urls.map(url => {
+        const fileId = url.split('/').pop();
+        return `Preview URL:\n![](https://lh3.googleusercontent.com/d/${fileId})\n\nDirect URL:\n![](https://drive.google.com/uc?export=view&id=${fileId})\n`;
+      }).join('\n');
+    } else if (outputFormat === 'html') {
+      return urls.map(url => {
+        const fileId = url.split('/').pop();
+        return `Preview URL:\n<img src="https://lh3.googleusercontent.com/d/${fileId}" />\n\nDirect URL:\n<img src="https://drive.google.com/uc?export=view&id=${fileId}" />\n`;
+      }).join('\n');
     }
+    return '';
   };
 
   const handleConvert = () => {
@@ -230,7 +240,7 @@ function App() {
   const handleBulkDownload = async () => {
     if (!previewUrls.length) return;
     
-    for (let i = 0; i < previewUrls.length; i++) {
+    for (let i = 0; i <previewUrls.length; i++) {
       const url = previewUrls[i];
       const filename = `image-${i + 1}.${url.split('.').pop()}`;
       await downloadImage(url, filename);
@@ -402,31 +412,23 @@ function App() {
           {output && (
             <div className="space-y-4">
               <div className="mb-6">
-                <label className="block text-sm font-medium mb-2 text-[#e4e4e4]">Converted URLs</label>
+                <label htmlFor="output" className="block text-sm font-medium text-gray-200 mb-2">
+                  Converted URLs
+                </label>
                 <div className="relative">
                   <textarea
-                    readOnly
+                    id="output"
                     value={output}
-                    rows={Math.min(output.split('\n').length, 5)}
-                    className="w-full bg-[#1e1e1e] rounded-lg p-4 pr-24 text-[#d4d4d4] resize-y border border-[#323232]"
+                    readOnly
+                    className="w-full h-32 p-3 bg-[#1e1e1e] text-gray-300 border border-[#323232] rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   />
-                  <div className="absolute right-2 top-2 flex gap-2">
+                  <div className="absolute top-2 right-2 space-x-2">
                     <button
-                      onClick={() => setPreviewContent(prev => ({
-                        type: prev.type === 'images' ? null : 'images',
-                        content: previewUrls
-                      }))}
-                      className="p-2 hover:bg-[#323232] rounded-lg transition-colors duration-200"
-                      title="Preview images"
-                    >
-                      {previewContent.type === 'images' ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                    <button
-                      onClick={handleCopy}
-                      className="p-2 hover:bg-[#323232] rounded-lg transition-colors duration-200"
+                      onClick={() => handleCopy()}
+                      className="p-1.5 text-gray-300 hover:bg-[#323232] rounded-lg transition-colors duration-200"
                       title="Copy to clipboard"
                     >
-                      {copied ? <Check className="w-5 h-5 text-[#89d185]" /> : <Copy className="w-5 h-5" />}
+                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -445,7 +447,7 @@ function App() {
                   { type: 'json', icon: FileJson, label: 'JSON' },
                   { type: 'csv', icon: FileText, label: 'CSV' },
                   { type: 'markdown', icon: FileText, label: 'Markdown' },
-                  { type: 'html', icon: FileText, label: 'HTML' }
+                  { type: 'html', icon: FileText, label: 'HTML/ Image Preview' }
                 ].map(({ type, icon: Icon, label }) => (
                   <div key={type} className="relative">
                     <button
@@ -480,85 +482,51 @@ function App() {
 
               {/* Preview Section */}
               {previewContent.type && (
-                <div className="mt-4 bg-[#1e1e1e] rounded-lg p-4 border border-[#323232]">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-medium text-[#e4e4e4]">
-                      {previewContent.type === 'images' ? 'Image Preview' :
-                       `${previewContent.type.toUpperCase()} Preview`}
-                    </h3>
+                <div className="mt-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-semibold text-gray-200">
+                      {previewContent.type.charAt(0).toUpperCase() + previewContent.type.slice(1)} Preview
+                    </h2>
                     <button
                       onClick={() => setPreviewContent({ type: null, content: '' })}
-                      className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200"
+                      className="text-gray-400 hover:text-gray-200"
                     >
-                      <EyeOff className="w-4 h-4" />
+                      Close
                     </button>
                   </div>
 
                   {previewContent.type === 'images' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      {(previewContent.content as string[]).map((url, index) => (
-                        <div key={index} className="bg-[#252526] rounded-lg p-2 relative group">
-                          <ImagePreview
-                            src={url}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-36 sm:h-48 object-contain rounded"
-                          />
-                          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => window.open(url, '_blank')}
-                              className="p-1.5 bg-[#424242] hover:bg-[#525252] rounded-lg transition-colors duration-200"
-                              title="Open in new tab"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {previewUrls.map((url, index) => {
+                        const fileId = url.split('/').pop();
+                        return (
+                          <div key={index} className="p-4 bg-[#1e1e1e] border border-[#323232] rounded-lg">
+                            <ImagePreview
+                              src={`https://lh3.googleusercontent.com/d/${fileId}`}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-48 object-contain rounded-lg"
+                            />
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : previewContent.type === 'html' ? (
                     <div className="space-y-4">
-                      <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                      <pre className="bg-[#1e1e1e] border border-[#323232] rounded-lg p-4 overflow-x-auto text-sm text-gray-300">
                         <code>{previewContent.content as string}</code>
                       </pre>
-                      <div className="bg-[#252526] rounded-lg p-4 space-y-4">
-                        <h4 className="text-sm font-medium text-[#e4e4e4]">Live Preview:</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                          {previewUrls.map((url, index) => (
-                            <div key={index} className="bg-[#1e1e1e] rounded-lg p-2">
-                              <img
-                                src={url}
-                                alt={`Image ${index + 1}`}
-                                className="w-full h-36 sm:h-48 object-contain rounded"
-                              />
-                            </div>
-                          ))}
-                        </div>
+                      <div className="bg-[#1e1e1e] border border-[#323232] rounded-lg p-4 text-gray-300">
+                        <div dangerouslySetInnerHTML={{ __html: previewContent.content as string }} />
                       </div>
                     </div>
                   ) : previewContent.type === 'markdown' ? (
                     <div className="space-y-4">
-                      <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                      <pre className="bg-[#1e1e1e] border border-[#323232] rounded-lg p-4 overflow-x-auto text-sm text-gray-300">
                         <code>{previewContent.content as string}</code>
                       </pre>
-                      <div className="bg-[#252526] rounded-lg p-4 space-y-4">
-                        <h4 className="text-sm font-medium text-[#e4e4e4]">Live Preview:</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                          {previewUrls.map((url, index) => (
-                            <div key={index} className="bg-[#1e1e1e] rounded-lg p-2">
-                              <img
-                                src={url}
-                                alt={`Image ${index + 1}`}
-                                className="w-full h-36 sm:h-48 object-contain rounded"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   ) : (
-                    <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                    <pre className="bg-[#1e1e1e] border border-[#323232] rounded-lg p-4 overflow-x-auto text-sm text-gray-300">
                       <code>{previewContent.content as string}</code>
                     </pre>
                   )}
@@ -612,7 +580,7 @@ function App() {
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleLoadHistory(item.originalUrl, item.convertedUrl)}
-                        className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200 text-[#e4e4e4]"
+                        className="p-1.5 text-gray-300 hover:bg-[#323232] rounded-lg transition-colors duration-200"
                         title="Load back to workspace"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
