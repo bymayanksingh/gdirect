@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Copy, Image, History, HelpCircle, AlertCircle, Check, Eye, EyeOff, List, Rows, Building2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Copy, Image, History, HelpCircle, AlertCircle, Check, Eye, EyeOff, List, Rows, Building2, Download, FileJson, FileText } from 'lucide-react';
 
 interface ConversionHistory {
   originalUrl: string;
@@ -12,6 +12,7 @@ interface ImagePreviewProps {
   alt: string;
   className?: string;
 }
+
 
 function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
   const [error, setError] = useState(false);
@@ -67,16 +68,16 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
           }}
         />
         <div className="absolute inset-0">
-          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute right-12 bottom-12 w-40 h-40 bg-white/5 rounded-full transform translate-x-1/2 translate-y-1/2" />
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-[#1e1e1e]/5 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute right-12 bottom-12 w-40 h-40 bg-[#1e1e1e]/5 rounded-full transform translate-x-1/2 translate-y-1/2" />
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-t from-white/5 to-transparent">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-t from-[#1e1e1e]/5 to-transparent">
           <div className="flex flex-col items-center text-center">
-            <div className="mb-4 p-3 rounded-full bg-white/5">
-              <Building2 className="w-6 h-6 text-white/40" />
+            <div className="mb-4 p-3 rounded-full bg-[#1e1e1e]/5">
+              <Building2 className="w-6 h-6 text-[#d4d4d4]/40" />
             </div>
             <div className="max-w-[80%]">
-              <p className="text-sm font-medium text-white/60 line-clamp-2">{alt}</p>
+              <p className="text-sm font-medium text-[#d4d4d4]/60 line-clamp-2">{alt}</p>
             </div>
           </div>
         </div>
@@ -88,7 +89,7 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
     <>
       {loading && (
         <div className={`relative overflow-hidden ${className}`}>
-          <div className="absolute inset-0 bg-white/5 animate-pulse">
+          <div className="absolute inset-0 bg-[#1e1e1e]/5 animate-pulse">
             <div 
               className="absolute inset-0"
               style={{
@@ -100,7 +101,7 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
             />
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#d4d4d4]/10 border-t-[#d4d4d4]/30 rounded-full animate-spin" />
           </div>
         </div>
       )}
@@ -119,13 +120,17 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
 function App() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [history, setHistory] = useState<ConversionHistory[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [outputFormat, setOutputFormat] = useState<'plain' | 'markdown' | 'html'>('plain');
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [outputFormat, setOutputFormat] = useState<'plain' | 'markdown' | 'html'>('plain');
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<ConversionHistory[]>([]);
+  const [copied, setCopied] = useState(false);
+  const [previewContent, setPreviewContent] = useState<{
+    type: 'json' | 'csv' | 'markdown' | 'html' | 'images' | null;
+    content: string | string[];
+  }>({ type: null, content: '' });
 
   const convertUrl = (url: string) => {
     const regex = /\/d\/([a-zA-Z0-9_-]+)\/view/;
@@ -199,6 +204,112 @@ function App() {
     setInput(urls.join('\n'));
   };
 
+  const handleLoadHistory = (originalUrl: string, convertedUrl: string) => {
+    setInput(originalUrl);
+    setOutput(convertedUrl);
+    setShowPreview(true);
+    setPreviewUrls([convertedUrl]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    if (!previewUrls.length) return;
+    
+    for (let i = 0; i < previewUrls.length; i++) {
+      const url = previewUrls[i];
+      const filename = `image-${i + 1}.${url.split('.').pop()}`;
+      await downloadImage(url, filename);
+    }
+  };
+
+  const handleExportUrls = (format: 'json' | 'csv') => {
+    if (!previewUrls.length) return;
+
+    let content: string;
+    let mimeType: string;
+    let filename: string;
+
+    if (format === 'json') {
+      content = JSON.stringify({ urls: previewUrls }, null, 2);
+      mimeType = 'application/json';
+      filename = 'gdirect-urls.json';
+    } else {
+      content = previewUrls.join('\n');
+      mimeType = 'text/csv';
+      filename = 'gdirect-urls.csv';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const generateMarkdownGallery = () => {
+    if (!previewUrls.length) return;
+
+    const markdown = previewUrls.map((url, index) => (
+      `![Image ${index + 1}](${url})`
+    )).join('\n\n');
+
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'gdirect-gallery.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handlePreviewContent = (type: 'json' | 'csv' | 'markdown' | 'html') => {
+    let content = '';
+    
+    switch (type) {
+      case 'json':
+        content = JSON.stringify({ urls: previewUrls }, null, 2);
+        break;
+      case 'csv':
+        content = previewUrls.join('\n');
+        break;
+      case 'markdown':
+        content = previewUrls.map((url, index) => (
+          `![Image ${index + 1}](${url})`
+        )).join('\n\n');
+        break;
+      case 'html':
+        content = previewUrls.map((url, index) => (
+          `<img src="${url}" alt="Image ${index + 1}" />`
+        )).join('\n');
+        break;
+    }
+
+    setPreviewContent({ type, content });
+  };
+
   useEffect(() => {
     const savedHistory = localStorage.getItem('conversionHistory');
     if (savedHistory) {
@@ -207,26 +318,26 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <header className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <Image className="w-12 h-12 text-blue-500" />
+    <div className="min-h-screen bg-[#1e1e1e] text-[#d4d4d4]">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-4xl">
+        <header className="text-center mb-8 sm:mb-12">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
+            <span className="text-4xl sm:text-6xl" role="img" aria-label="GDirect Logo">🔗</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Drive Image URL Converter</h1>
-          <p className="text-gray-400">Convert Google Drive sharing links to direct image URLs</p>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-2 text-[#e4e4e4]">GDirect</h1>
+          <p className="text-sm sm:text-base text-[#858585]">Convert Google Drive sharing links to direct image URLs</p>
         </header>
 
-        <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-xl">
+        <div className="bg-[#252526] rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl border border-[#323232]">
           <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium">Input URLs (one per line)</label>
-              <span className="text-sm text-gray-400">
+              <label className="block text-sm font-medium text-[#e4e4e4]">Input URLs (one per line)</label>
+              <span className="text-sm text-[#a4a4a4]">
                 {input.split('\n').filter(url => url.trim()).length} URLs
               </span>
             </div>
             <textarea
-              className="w-full bg-gray-700 rounded-lg p-4 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full bg-[#1e1e1e] rounded-lg p-4 text-[#d4d4d4] focus:ring-2 focus:ring-[#424242] focus:outline-none border border-[#323232] placeholder-[#6b6b6b]"
               rows={4}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -235,14 +346,16 @@ function App() {
             />
           </div>
 
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
-              <label className="block text-sm font-medium mb-2">Output Format</label>
-              <div className="flex gap-2">
+              <label className="block text-sm font-medium mb-2 text-[#e4e4e4]">Output Format</label>
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setOutputFormat('plain')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                    outputFormat === 'plain' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
+                    outputFormat === 'plain' 
+                      ? 'bg-[#424242] text-white' 
+                      : 'bg-[#2d2d2d] hover:bg-[#323232] border border-[#323232] text-[#d4d4d4]'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -250,8 +363,10 @@ function App() {
                 </button>
                 <button
                   onClick={() => setOutputFormat('markdown')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                    outputFormat === 'markdown' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
+                    outputFormat === 'markdown'
+                      ? 'bg-[#424242] text-white'
+                      : 'bg-[#2d2d2d] hover:bg-[#323232] border border-[#323232] text-[#d4d4d4]'
                   }`}
                 >
                   <Rows className="w-4 h-4" />
@@ -259,8 +374,10 @@ function App() {
                 </button>
                 <button
                   onClick={() => setOutputFormat('html')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
-                    outputFormat === 'html' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                  className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
+                    outputFormat === 'html'
+                      ? 'bg-[#424242] text-white'
+                      : 'bg-[#2d2d2d] hover:bg-[#323232] border border-[#323232] text-[#d4d4d4]'
                   }`}
                 >
                   <code className="text-sm">&lt;&gt;</code>
@@ -272,72 +389,195 @@ function App() {
 
           <button
             onClick={handleConvert}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 mb-6"
+            className="w-full bg-[#424242] hover:bg-[#525252] text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 mb-6"
           >
             Convert
           </button>
 
           {error && (
-            <div className="flex items-center gap-2 text-red-400 mb-4">
+            <div className="flex items-center gap-2 text-[#f48771] mb-4 bg-[#f4877120] p-3 rounded-lg border border-[#f4877140]">
               <AlertCircle className="w-5 h-5" />
               <span>{error}</span>
             </div>
           )}
 
           {output && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Converted URLs</label>
-              <div className="relative">
-                <textarea
-                  readOnly
-                  value={output}
-                  rows={Math.min(output.split('\n').length, 5)}
-                  className="w-full bg-gray-700 rounded-lg p-4 pr-24 text-gray-100 resize-y"
-                />
-                <div className="absolute right-2 top-2 flex gap-2">
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="p-2 hover:bg-gray-600 rounded-lg"
-                    title={showPreview ? "Hide preview" : "Show preview"}
-                  >
-                    {showPreview ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                  <button
-                    onClick={handleCopy}
-                    className="p-2 hover:bg-gray-600 rounded-lg"
-                    title="Copy to clipboard"
-                  >
-                    {copied ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
-                  </button>
+            <div className="space-y-4">
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2 text-[#e4e4e4]">Converted URLs</label>
+                <div className="relative">
+                  <textarea
+                    readOnly
+                    value={output}
+                    rows={Math.min(output.split('\n').length, 5)}
+                    className="w-full bg-[#1e1e1e] rounded-lg p-4 pr-24 text-[#d4d4d4] resize-y border border-[#323232]"
+                  />
+                  <div className="absolute right-2 top-2 flex gap-2">
+                    <button
+                      onClick={() => setPreviewContent(prev => ({
+                        type: prev.type === 'images' ? null : 'images',
+                        content: previewUrls
+                      }))}
+                      className="p-2 hover:bg-[#323232] rounded-lg transition-colors duration-200"
+                      title="Preview images"
+                    >
+                      {previewContent.type === 'images' ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                    <button
+                      onClick={handleCopy}
+                      className="p-2 hover:bg-[#323232] rounded-lg transition-colors duration-200"
+                      title="Copy to clipboard"
+                    >
+                      {copied ? <Check className="w-5 h-5 text-[#89d185]" /> : <Copy className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {showPreview && previewUrls.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Image Previews</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {previewUrls.map((url, index) => (
-                  <div key={index} className="bg-gray-700 rounded-lg p-2 relative">
-                    <ImagePreview
-                      src={url}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-48 object-contain rounded"
-                    />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleBulkDownload}
+                  className="flex items-center gap-2 px-3 py-2 bg-[#424242] hover:bg-[#525252] rounded-lg text-white transition-colors duration-200"
+                  disabled={!previewUrls.length}
+                >
+                  <Download className="w-4 h-4" />
+                  Download All
+                </button>
+                {[
+                  { type: 'json', icon: FileJson, label: 'JSON' },
+                  { type: 'csv', icon: FileText, label: 'CSV' },
+                  { type: 'markdown', icon: FileText, label: 'Markdown' },
+                  { type: 'html', icon: FileText, label: 'HTML' }
+                ].map(({ type, icon: Icon, label }) => (
+                  <div key={type} className="relative">
+                    <button
+                      onClick={() => handlePreviewContent(type as any)}
+                      className="flex items-center gap-2 px-3 py-2 bg-[#424242] hover:bg-[#525252] rounded-lg text-white transition-colors duration-200 group"
+                      disabled={!previewUrls.length}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="flex items-center gap-1">
+                        {label}
+                        <Eye className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
+                      </span>
+                    </button>
+                    {previewContent.type === type && (
+                      <button
+                        onClick={() => {
+                          if (type === 'markdown') {
+                            generateMarkdownGallery();
+                          } else {
+                            handleExportUrls(type as 'json' | 'csv');
+                          }
+                        }}
+                        className="absolute -right-2 -top-2 p-1.5 bg-[#525252] hover:bg-[#626262] rounded-full"
+                        title={`Download ${label}`}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
+
+              {/* Preview Section */}
+              {previewContent.type && (
+                <div className="mt-4 bg-[#1e1e1e] rounded-lg p-4 border border-[#323232]">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-medium text-[#e4e4e4]">
+                      {previewContent.type === 'images' ? 'Image Preview' :
+                       `${previewContent.type.toUpperCase()} Preview`}
+                    </h3>
+                    <button
+                      onClick={() => setPreviewContent({ type: null, content: '' })}
+                      className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200"
+                    >
+                      <EyeOff className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {previewContent.type === 'images' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      {(previewContent.content as string[]).map((url, index) => (
+                        <div key={index} className="bg-[#252526] rounded-lg p-2 relative group">
+                          <ImagePreview
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-36 sm:h-48 object-contain rounded"
+                          />
+                          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => window.open(url, '_blank')}
+                              className="p-1.5 bg-[#424242] hover:bg-[#525252] rounded-lg transition-colors duration-200"
+                              title="Open in new tab"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : previewContent.type === 'html' ? (
+                    <div className="space-y-4">
+                      <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                        <code>{previewContent.content as string}</code>
+                      </pre>
+                      <div className="bg-[#252526] rounded-lg p-4 space-y-4">
+                        <h4 className="text-sm font-medium text-[#e4e4e4]">Live Preview:</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          {previewUrls.map((url, index) => (
+                            <div key={index} className="bg-[#1e1e1e] rounded-lg p-2">
+                              <img
+                                src={url}
+                                alt={`Image ${index + 1}`}
+                                className="w-full h-36 sm:h-48 object-contain rounded"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : previewContent.type === 'markdown' ? (
+                    <div className="space-y-4">
+                      <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                        <code>{previewContent.content as string}</code>
+                      </pre>
+                      <div className="bg-[#252526] rounded-lg p-4 space-y-4">
+                        <h4 className="text-sm font-medium text-[#e4e4e4]">Live Preview:</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          {previewUrls.map((url, index) => (
+                            <div key={index} className="bg-[#1e1e1e] rounded-lg p-2">
+                              <img
+                                src={url}
+                                alt={`Image ${index + 1}`}
+                                className="w-full h-36 sm:h-48 object-contain rounded"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <pre className="bg-[#252526] rounded-lg p-3 overflow-x-auto text-sm">
+                      <code>{previewContent.content as string}</code>
+                    </pre>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-xl">
-          <div className="flex items-center gap-2 mb-4">
-            <HelpCircle className="w-6 h-6 text-blue-500" />
-            <h2 className="text-xl font-semibold">How to Use</h2>
+        <div className="bg-[#252526] rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl border border-[#323232]">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="p-1.5 rounded-lg bg-[#32323240]">
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#e4e4e4]" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-[#e4e4e4]">How to Use</h2>
           </div>
-          <ol className="list-decimal list-inside space-y-2 text-gray-300">
+          <ol className="list-decimal list-inside space-y-2 text-sm sm:text-base text-[#d4d4d4]">
             <li>Open your Google Drive images and click "Share"</li>
             <li>Set access to "Anyone with the link"</li>
             <li>Copy the sharing links</li>
@@ -348,32 +588,76 @@ function App() {
           </ol>
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+        <div className="bg-[#252526] rounded-xl p-4 sm:p-6 shadow-xl border border-[#323232]">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 text-lg font-semibold mb-4"
+            className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-[#e4e4e4] hover:text-white transition-colors duration-200"
           >
-            <History className="w-6 h-6 text-blue-500" />
+            <div className="p-1.5 rounded-lg bg-[#32323240]">
+              <History className="w-5 h-5 sm:w-6 sm:h-6 text-[#e4e4e4]" />
+            </div>
             Recent Conversions
           </button>
           
           {showHistory && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {history.map((item, index) => (
-                <div key={index} className="bg-gray-700 rounded-lg p-4">
-                  <div className="text-sm text-gray-400 mb-1">
-                    {new Date(item.timestamp).toLocaleString()}
+                <div key={index} className="bg-[#1e1e1e] rounded-lg p-3 sm:p-4 border border-[#323232] group">
+                  <div className="flex justify-between items-start gap-4 mb-2">
+                    <div className="flex-grow min-w-0">
+                      <div className="text-xs sm:text-sm text-[#858585] mb-1">
+                        {new Date(item.timestamp).toLocaleString()}
+                      </div>
+                      <div className="text-xs sm:text-sm truncate mb-1 text-[#d4d4d4]">{item.originalUrl}</div>
+                      <div className="text-xs sm:text-sm text-[#e4e4e4] truncate">{item.convertedUrl}</div>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleLoadHistory(item.originalUrl, item.convertedUrl)}
+                        className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200 text-[#e4e4e4]"
+                        title="Load back to workspace"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPreviewUrls([item.convertedUrl]);
+                          setShowPreview(true);
+                        }}
+                        className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200 text-[#e4e4e4]"
+                        title="Preview image"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(item.convertedUrl)}
+                        className="p-1.5 hover:bg-[#323232] rounded-lg transition-colors duration-200 text-[#e4e4e4]"
+                        title="Copy converted URL"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-sm truncate mb-1">{item.originalUrl}</div>
-                  <div className="text-sm text-blue-400 truncate">{item.convertedUrl}</div>
+                  {showPreview && previewUrls.length === 1 && previewUrls[0] === item.convertedUrl && (
+                    <div className="mt-3 bg-[#252526] rounded-lg p-2">
+                      <ImagePreview
+                        src={item.convertedUrl}
+                        alt="Preview"
+                        className="w-full h-36 object-contain rounded"
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
               {history.length === 0 && (
-                <div className="text-gray-400 text-center py-4">No conversion history yet</div>
+                <div className="text-[#d4d4d4] text-center py-4">No conversion history yet</div>
               )}
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
