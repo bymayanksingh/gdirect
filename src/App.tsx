@@ -13,7 +13,6 @@ interface ImagePreviewProps {
   className?: string;
 }
 
-
 function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,7 +40,6 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
         return `https://lh3.googleusercontent.com/d/${fileId}`;
       }
     }
-    
     return url;
   };
 
@@ -68,16 +66,16 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
           }}
         />
         <div className="absolute inset-0">
-          <div className="absolute -right-6 -top-6 w-32 h-32 bg-[#1e1e1e]/5 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute right-12 bottom-12 w-40 h-40 bg-[#1e1e1e]/5 rounded-full transform translate-x-1/2 translate-y-1/2" />
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute right-12 bottom-12 w-40 h-40 bg-white/5 rounded-full transform translate-x-1/2 translate-y-1/2" />
         </div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-t from-[#1e1e1e]/5 to-transparent">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-t from-white/5 to-transparent">
           <div className="flex flex-col items-center text-center">
-            <div className="mb-4 p-3 rounded-full bg-[#1e1e1e]/5">
-              <Building2 className="w-6 h-6 text-[#d4d4d4]/40" />
+            <div className="mb-4 p-3 rounded-full bg-white/5">
+              <Building2 className="w-6 h-6 text-white/40" />
             </div>
             <div className="max-w-[80%]">
-              <p className="text-sm font-medium text-[#d4d4d4]/60 line-clamp-2">{alt}</p>
+              <p className="text-sm font-medium text-white/60 line-clamp-2">{alt}</p>
             </div>
           </div>
         </div>
@@ -89,7 +87,7 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
     <>
       {loading && (
         <div className={`relative overflow-hidden ${className}`}>
-          <div className="absolute inset-0 bg-[#1e1e1e]/5 animate-pulse">
+          <div className="absolute inset-0 bg-white/5 animate-pulse">
             <div 
               className="absolute inset-0"
               style={{
@@ -101,7 +99,7 @@ function ImagePreview({ src, alt, className = '' }: ImagePreviewProps) {
             />
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-[#d4d4d4]/10 border-t-[#d4d4d4]/30 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
           </div>
         </div>
       )}
@@ -137,7 +135,7 @@ function App() {
     const match = url.match(regex);
     
     if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      return `https://lh3.googleusercontent.com/d/${match[1]}`;
     }
     throw new Error('Invalid Google Drive URL format');
   };
