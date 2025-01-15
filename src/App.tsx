@@ -420,7 +420,7 @@ function App() {
                     id="output"
                     value={output}
                     readOnly
-                    className="w-full h-32 p-3 bg-[#1e1e1e] text-gray-300 border border-[#323232] rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full h-48 p-3 bg-[#1e1e1e] text-gray-300 border border-[#323232] rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   />
                   <div className="absolute top-2 right-2 space-x-2">
                     <button
