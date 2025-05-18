@@ -375,7 +375,7 @@ function App() {
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Filename
                   <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
-                    Enter manually or generate using the button
+                    Enter manually or generate `uuid4` using the button
                   </span>
                 </label>
                 <div className="flex">
