@@ -303,6 +303,9 @@ function App() {
               <div>
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Category
+                  <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                    e.g., Tractors, Forklifts, Cranes, Harvesters
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -318,6 +321,9 @@ function App() {
               <div>
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Brand
+                  <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                    e.g., John Deere, Case IH, Snapper, Honda
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -333,6 +339,9 @@ function App() {
               <div>
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Version
+                  <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                    e.g., v1, v2, v3
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -348,6 +357,9 @@ function App() {
               <div>
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Cluster
+                  <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                    e.g., agriculture, construction
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -362,6 +374,9 @@ function App() {
               <div>
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Filename
+                  <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                    Enter manually or generate using the button
+                  </span>
                 </label>
                 <div className="flex">
                   <input
@@ -385,6 +400,9 @@ function App() {
                 <div>
                   <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                     File *
+                    <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                      Upload from file system or drag and drop when in `File Upload` tab
+                    </span>
                   </label>
                   <div className="flex">
                     <div className="flex-1 bg-[#1e1e1e] rounded-l-lg p-2 sm:p-3 text-sm text-[#d4d4d4] border border-r-0 border-[#323232] truncate">
@@ -404,7 +422,7 @@ function App() {
               ) : (
                 <div>
                   <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
-                    URL *
+                    Link *
                   </label>
                   <input
                     type="url"
