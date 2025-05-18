@@ -192,8 +192,35 @@ function App() {
     }
   }, []);
 
+  // Add drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setUploadType("file");
+    
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setSelectedFile(droppedFile);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#1e1e1e] text-[#d4d4d4]">
+    <div 
+      className="min-h-screen bg-[#1e1e1e] text-[#d4d4d4]"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -459,6 +486,9 @@ function App() {
                       Cluster: {item.metadata.cluster}
                     </div>
                   )}
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2">
+                    Filename: {item.s3Url.split('/').pop()?.split('.')[0]}
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
