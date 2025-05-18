@@ -404,11 +404,11 @@ function App() {
                       Upload from file system or drag and drop when in `File Upload` tab
                     </span>
                   </label>
-                  <div className="flex">
-                    <div className="flex-1 bg-[#1e1e1e] rounded-l-lg p-2 sm:p-3 text-sm text-[#d4d4d4] border border-r-0 border-[#323232] truncate">
+                  <label className="flex cursor-pointer">
+                    <div className="flex-1 bg-[#1e1e1e] rounded-l-lg p-2 sm:p-3 text-sm text-[#d4d4d4] border border-r-0 border-[#323232] truncate hover:bg-[#252526] transition-colors">
                       {selectedFile ? selectedFile.name : "Choose a file"}
                     </div>
-                    <label className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center cursor-pointer transition-colors">
+                    <div className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors">
                       <input
                         type="file"
                         onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
@@ -416,8 +416,8 @@ function App() {
                         required
                       />
                       <File className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </label>
-                  </div>
+                    </div>
+                  </label>
                 </div>
               ) : (
                 <div>
