@@ -117,12 +117,10 @@ function App() {
       data.append("version", formData.version);
       if (formData.cluster) data.append("cluster", formData.cluster);
 
-      // Ensure finalFilename is set before using it
       let finalFilename = formData.filename.trim() ? formData.filename : uuidv4();
       
-      // Check if the current filename is found as a substring in the S3 URL
       if (response.includes(finalFilename)) {
-        finalFilename = uuidv4(); // Generate a new UUID if found in the S3 URL
+        finalFilename = uuidv4();
       }
       
       setFormData((prev) => ({ ...prev, filename: finalFilename }));
@@ -149,7 +147,7 @@ function App() {
 
       setResponse(result.s3_url);
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4500); // Hide confetti after 5 seconds
+      setTimeout(() => setShowConfetti(false), 4500);
 
       const newHistory: UploadHistory = {
         inputType: uploadType,
@@ -192,26 +190,60 @@ function App() {
     }
   }, []);
 
-  // Add drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
     setUploadType("file");
     
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       setSelectedFile(droppedFile);
     }
+  };
+
+  const handleClearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem("uploadHistory");
+  };
+
+  const handleExportCSV = () => {
+    if (history.length === 0) return;
+
+    const escapeCSV = (value: string) => {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    const csvRows = [
+      ['Timestamp', 'Type', 'Original Input', 'Category', 'Brand', 'Version', 'Cluster', 'Filename', 'S3 URL'],
+      ...history.map(item => [
+        escapeCSV(new Date(item.timestamp).toLocaleString()),
+        escapeCSV(item.inputType),
+        escapeCSV(item.originalInput || ''),
+        escapeCSV(item.metadata.category),
+        escapeCSV(item.metadata.brand),
+        escapeCSV(item.metadata.version),
+        escapeCSV(item.metadata.cluster || ''),
+        escapeCSV(item.metadata.filename || item.s3Url.split('/').pop()?.split('.')[0] || ''),
+        escapeCSV(item.s3Url)
+      ])
+    ];
+
+    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `upload_history_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   return (
@@ -450,16 +482,36 @@ function App() {
         </div>
 
         <div className="bg-[#252526] rounded-xl p-4 sm:p-6 shadow-xl border border-[#323232]">
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-3 sm:mb-4"
-          >
-            <History className="w-4 h-4 sm:w-5 sm:h-5" />
-            Upload History
-          </button>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2 h-8 sm:h-9"
+            >
+              <History className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-base sm:text-lg font-semibold leading-none">Upload History</span>
+            </button>
+            <div className="flex items-center gap-2">
+              {history.length > 0 && (
+                <>
+                  <button
+                    onClick={handleExportCSV}
+                    className="flex items-center h-8 sm:h-9 px-3 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-lg text-xs sm:text-sm transition-colors border border-[#323232]"
+                  >
+                    Export CSV
+                  </button>
+                  <button
+                    onClick={handleClearHistory}
+                    className="flex items-center h-8 sm:h-9 px-3 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-lg text-xs sm:text-sm transition-colors border border-[#323232]"
+                  >
+                    Clear History
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
 
           {showHistory && (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
               {history.map((item, index) => (
                 <div
                   key={index}
