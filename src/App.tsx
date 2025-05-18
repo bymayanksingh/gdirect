@@ -203,53 +203,53 @@ function App() {
           gravity={0.3}
         />
       )}
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 max-w-4xl">
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-[#e4e4e4]">Harbour ⚓️</h1>
-          <p className="text-sm text-[#858585]">Upload a document via file or URL.</p>
-          <p className="text-xs text-[#6e6e6e] mt-2">Pre-filled fields contain default values that can be modified if needed.</p>
-          <p className="text-xs text-[#6e6e6e] mt-1">
-            Output URL format: <span className="font-mono">https://bucket.s3.amazonaws.com/version/cluster/category/brand/filename</span>
+      <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-8 max-w-4xl min-h-screen">
+        <header className="text-center mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-[#e4e4e4]">Harbour ⚓️</h1>
+          <p className="text-xs sm:text-sm text-[#858585]">Upload a document via file or URL.</p>
+          <p className="text-[10px] sm:text-xs text-[#6e6e6e] mt-1 sm:mt-2">Pre-filled fields contain default values that can be modified if needed.</p>
+          <p className="text-[10px] sm:text-xs text-[#6e6e6e] mt-1">
+            Output URL format: <span className="font-mono text-[8px] sm:text-[10px] md:text-xs break-all">https://bucket.s3.amazonaws.com/version/cluster/category/brand/filename</span>
           </p>
         </header>
 
-        <div className="bg-[#252526] rounded-xl p-6 mb-8 shadow-xl border border-[#323232]">
-          <div className="mb-6">
-            <div className="flex gap-4 mb-6">
+        <div className="bg-[#252526] rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 shadow-xl border border-[#323232]">
+          <div className="mb-3 sm:mb-4 md:mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
               <button
                 onClick={() => setUploadType("file")}
-                className={`flex-1 p-4 rounded-lg flex items-center justify-center gap-2 ${
+                className={`flex-1 p-3 sm:p-4 rounded-lg flex items-center justify-center gap-2 ${
                   uploadType === "file"
                     ? "bg-[#424242] text-white"
                     : "bg-[#2d2d2d] text-[#d4d4d4]"
                 }`}
               >
-                <File className="w-5 h-5" />
+                <File className="w-4 h-4 sm:w-5 sm:h-5" />
                 File Upload
               </button>
               <button
                 onClick={() => setUploadType("url")}
-                className={`flex-1 p-4 rounded-lg flex items-center justify-center gap-2 ${
+                className={`flex-1 p-3 sm:p-4 rounded-lg flex items-center justify-center gap-2 ${
                   uploadType === "url"
                     ? "bg-[#424242] text-white"
                     : "bg-[#2d2d2d] text-[#d4d4d4]"
                 }`}
               >
-                <Link className="w-5 h-5" />
+                <Link className="w-4 h-4 sm:w-5 sm:h-5" />
                 URL Upload
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Category
                 </label>
                 <input
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-3 border border-[#323232] ${
+                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
                     formData.category === 'general' ? 'text-[#858585]' : 'text-[#d4d4d4]'
                   }`}
                   required
@@ -257,14 +257,14 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Brand
                 </label>
                 <input
                   type="text"
                   value={formData.brand}
                   onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-3 border border-[#323232] ${
+                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
                     formData.brand === 'default' ? 'text-[#858585]' : 'text-[#d4d4d4]'
                   }`}
                   required
@@ -272,14 +272,14 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Version
                 </label>
                 <input
                   type="text"
                   value={formData.version}
                   onChange={(e) => setFormData((prev) => ({ ...prev, version: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-3 border border-[#323232] ${
+                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
                     formData.version === 'v1' ? 'text-[#858585]' : 'text-[#d4d4d4]'
                   }`}
                   required
@@ -287,77 +287,72 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Cluster
                 </label>
                 <input
                   type="text"
                   value={formData.cluster}
                   onChange={(e) => setFormData((prev) => ({ ...prev, cluster: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-3 border border-[#323232] ${
+                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
                     formData.cluster === 'main' ? 'text-[#858585]' : 'text-[#d4d4d4]'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                   Filename
                 </label>
                 <div className="flex">
                   <input
                     type="text"
                     value={formData.filename}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        filename: e.target.value,
-                      }))
-                    }
-                    className="flex-1 bg-[#1e1e1e] rounded-l-lg p-3 text-[#d4d4d4] border border-r-0 border-[#323232]"
+                    onChange={(e) => setFormData((prev) => ({ ...prev, filename: e.target.value }))}
+                    className="flex-1 bg-[#1e1e1e] rounded-l-lg p-2 sm:p-3 text-sm text-[#d4d4d4] border border-r-0 border-[#323232]"
                   />
                   <button
                     onClick={generateUUID}
-                    className="px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
+                    className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
                     title="Generate UUID"
                   >
-                    <RefreshCw className="w-5 h-5" />
+                    <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </div>
 
+              {/* File/URL input section */}
               {uploadType === "file" ? (
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                     File *
                   </label>
                   <div className="flex">
-                    <div className="flex-1 bg-[#1e1e1e] rounded-l-lg p-3 text-[#d4d4d4] border border-r-0 border-[#323232] truncate">
+                    <div className="flex-1 bg-[#1e1e1e] rounded-l-lg p-2 sm:p-3 text-sm text-[#d4d4d4] border border-r-0 border-[#323232] truncate">
                       {selectedFile ? selectedFile.name : "Choose a file"}
                     </div>
-                    <label className="px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center cursor-pointer transition-colors">
+                    <label className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center cursor-pointer transition-colors">
                       <input
                         type="file"
-                        onChange={(e) =>
-                          setSelectedFile(e.target.files?.[0] || null)
-                        }
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                         className="hidden"
                         required
                       />
-                      <File className="w-5 h-5" />
+                      <File className="w-4 h-4 sm:w-5 sm:h-5" />
                     </label>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                     URL *
                   </label>
                   <input
                     type="url"
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
-                    className="w-full bg-[#1e1e1e] rounded-lg p-3 text-[#d4d4d4] border border-[#323232]"
+                    placeholder="Enter URL"
+                    className="w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] text-[#d4d4d4]"
                     required
                   />
                 </div>
@@ -365,10 +360,11 @@ function App() {
             </div>
           </div>
 
+          {/* Adjust the upload button */}
           <button
             onClick={handleUpload}
             disabled={loading}
-            className="w-full bg-[#424242] hover:bg-[#525252] text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 mb-6 disabled:opacity-50 relative overflow-hidden"
+            className="w-full bg-[#424242] hover:bg-[#525252] text-white font-medium py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base rounded-lg transition-all duration-200 mb-3 sm:mb-4 disabled:opacity-50 relative overflow-hidden"
           >
             {loading ? (
               <div className="flex items-center justify-center gap-3">
@@ -426,40 +422,40 @@ function App() {
           )}
         </div>
 
-        <div className="bg-[#252526] rounded-xl p-6 shadow-xl border border-[#323232]">
+        <div className="bg-[#252526] rounded-xl p-4 sm:p-6 shadow-xl border border-[#323232]">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 text-lg font-semibold mb-4"
+            className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-3 sm:mb-4"
           >
-            <History className="w-5 h-5" />
+            <History className="w-4 h-4 sm:w-5 sm:h-5" />
             Upload History
           </button>
 
           {showHistory && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-[#1e1e1e] rounded-lg p-4 border border-[#323232]"
+                  className="bg-[#1e1e1e] rounded-lg p-2 sm:p-3 md:p-4 border border-[#323232]"
                 >
-                  <div className="text-sm text-[#858585] mb-1">
+                  <div className="text-xs sm:text-sm text-[#858585] mb-1 sm:mb-2">
                     {new Date(item.timestamp).toLocaleString()}
                   </div>
-                  <div className="text-sm mb-1">Type: {item.inputType}</div>
-                  <div className="text-sm mb-1">
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2">Type: {item.inputType}</div>
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2 break-all">
                     Input: {item.originalInput}
                   </div>
-                  <div className="text-sm mb-2">
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2">
                     Category: {item.metadata.category}
                   </div>
-                  <div className="text-sm mb-2">
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2">
                     Brand: {item.metadata.brand}
                   </div>
-                  <div className="text-sm mb-2">
+                  <div className="text-xs sm:text-sm mb-1 sm:mb-2">
                     Version: {item.metadata.version}
                   </div>
                   {item.metadata.cluster && (
-                    <div className="text-sm mb-2">
+                    <div className="text-xs sm:text-sm mb-1 sm:mb-2">
                       Cluster: {item.metadata.cluster}
                     </div>
                   )}
@@ -468,19 +464,19 @@ function App() {
                       type="text"
                       value={item.s3Url}
                       readOnly
-                      className="flex-1 bg-[#252526] rounded p-2 text-sm"
+                      className="flex-1 bg-[#252526] rounded p-2 sm:p-3 text-xs sm:text-sm break-all"
                     />
                     <button
                       onClick={() => navigator.clipboard.writeText(item.s3Url)}
-                      className="p-2 hover:bg-[#323232] rounded-lg"
+                      className="p-1.5 sm:p-2 hover:bg-[#323232] rounded-lg"
                     >
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
               ))}
               {history.length === 0 && (
-                <div className="text-center py-4">No upload history yet</div>
+                <div className="text-center py-3 sm:py-4 text-sm">No upload history yet</div>
               )}
             </div>
           )}
