@@ -423,6 +423,9 @@ function App() {
                 <div>
                   <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">
                     Link *
+                    <span className="block text-[10px] sm:text-xs text-[#858585] font-normal mt-0.5">
+                      e.g., https://example.com/document.pdf
+                    </span>
                   </label>
                   <input
                     type="url"
