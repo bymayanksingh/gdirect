@@ -8,7 +8,8 @@ import {
   AlertCircle,
   Check,
   RefreshCw,
-  Loader
+  Loader,
+  RotateCcw
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -49,7 +50,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const baseUrl = import.meta.env.VITE_UPLOAD_API_ENDPOINT;
+  const baseUrl = import.meta.env.VITE_TRUECRAWLER_BASE_URL;
 
 
   const generateUUID = () => {
@@ -264,7 +265,7 @@ function App() {
       )}
       <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-8 max-w-4xl min-h-screen">
         <header className="text-center mb-4 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-[#e4e4e4]">Harbour ⚓️</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-[#e4e4e4]">File Harbour ⚓️</h1>
           <p className="text-xs sm:text-sm text-[#858585]">Upload a document via file or URL.</p>
           <p className="text-[10px] sm:text-xs text-[#6e6e6e] mt-1 sm:mt-2">Pre-filled fields contain default values that can be modified if needed.</p>
           <p className="text-[10px] sm:text-xs text-[#6e6e6e] mt-1">
@@ -307,15 +308,26 @@ function App() {
                     e.g., Tractors, Forklifts, Cranes, Harvesters
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
-                    formData.category === 'general' ? 'text-[#858585]' : 'text-[#d4d4d4]'
-                  }`}
-                  required
-                />
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={formData.category}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                    className={`flex-1 bg-[#1e1e1e] ${!formData.category ? 'rounded-l-lg border-r-0' : 'rounded-lg'} p-2 sm:p-3 text-sm border border-[#323232] ${
+                      formData.category === 'general' ? 'text-[#858585]' : 'text-[#d4d4d4]'
+                    }`}
+                    required
+                  />
+                  {!formData.category && (
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, category: 'general' }))}
+                      className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
+                      title="Restore default"
+                    >
+                      <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -325,15 +337,26 @@ function App() {
                     e.g., John Deere, Case IH, Snapper, Honda
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.brand}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
-                    formData.brand === 'default' ? 'text-[#858585]' : 'text-[#d4d4d4]'
-                  }`}
-                  required
-                />
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={formData.brand}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
+                    className={`flex-1 bg-[#1e1e1e] ${!formData.brand ? 'rounded-l-lg border-r-0' : 'rounded-lg'} p-2 sm:p-3 text-sm border border-[#323232] ${
+                      formData.brand === 'default' ? 'text-[#858585]' : 'text-[#d4d4d4]'
+                    }`}
+                    required
+                  />
+                  {!formData.brand && (
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, brand: 'default' }))}
+                      className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
+                      title="Restore default"
+                    >
+                      <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -343,15 +366,26 @@ function App() {
                     e.g., v1, v2, v3
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.version}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, version: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
-                    formData.version === 'v1' ? 'text-[#858585]' : 'text-[#d4d4d4]'
-                  }`}
-                  required
-                />
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={formData.version}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, version: e.target.value }))}
+                    className={`flex-1 bg-[#1e1e1e] ${!formData.version ? 'rounded-l-lg border-r-0' : 'rounded-lg'} p-2 sm:p-3 text-sm border border-[#323232] ${
+                      formData.version === 'v1' ? 'text-[#858585]' : 'text-[#d4d4d4]'
+                    }`}
+                    required
+                  />
+                  {!formData.version && (
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, version: 'v1' }))}
+                      className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
+                      title="Restore default"
+                    >
+                      <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -361,14 +395,25 @@ function App() {
                     e.g., agriculture, construction
                   </span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.cluster}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, cluster: e.target.value }))}
-                  className={`w-full bg-[#1e1e1e] rounded-lg p-2 sm:p-3 text-sm border border-[#323232] ${
-                    formData.cluster === 'main' ? 'text-[#858585]' : 'text-[#d4d4d4]'
-                  }`}
-                />
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={formData.cluster}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, cluster: e.target.value }))}
+                    className={`flex-1 bg-[#1e1e1e] ${!formData.cluster ? 'rounded-l-lg border-r-0' : 'rounded-lg'} p-2 sm:p-3 text-sm border border-[#323232] ${
+                      formData.cluster === 'main' ? 'text-[#858585]' : 'text-[#d4d4d4]'
+                    }`}
+                  />
+                  {!formData.cluster && (
+                    <button
+                      onClick={() => setFormData(prev => ({ ...prev, cluster: 'main' }))}
+                      className="px-2 sm:px-4 bg-[#2d2d2d] hover:bg-[#323232] text-[#d4d4d4] rounded-r-lg border border-l-0 border-[#323232] flex items-center justify-center transition-colors"
+                      title="Restore default"
+                    >
+                      <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
